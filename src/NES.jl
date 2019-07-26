@@ -1,10 +1,9 @@
 module NES
 
-if isfile(joinpath(dirname(dirname(@__FILE__)), "deps", "deps.jl"))
-    include("../deps/deps.jl")
-else
-    ext = Sys.iswindows() ? ".dll" : ".so"
-    error("lib_nes_env" * ext *  " not properly installed. Please run Pkg.build(\"ArcadeLearningEnvironment\")")
-end
+# Importing our NES Interface
+include("NESInterface/NESInterface.jl")
 
-end # module
+
+include("SMBEnv/SMBEnv.jl")
+export SMBEnv, reset!, step!, render
+end # end module
