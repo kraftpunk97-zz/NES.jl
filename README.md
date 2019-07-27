@@ -1,12 +1,14 @@
 ﻿# NES.jl [WIP]
 
+[![Build Status](https://travis-ci.com/kraftpunk97/NES.jl.svg?branch=master)](https://travis-ci.com/kraftpunk97/NES.jl)
+
 ![](https://media.giphy.com/media/gjCGZwYAAYoDdMOfdM/giphy.gif)
 
 This is a simple NES emulator for the Julia programming language, based on the [nes-py](https://github.com/Kautenja/nes-py) emulator. The emulator has been augmented to serve as a training environment for reinforcement learning experimentation and projects.
 
 ## Installation
 
-NES.jl currently requires SCons and clang for building on Linux/macOS. So ensure that these dependencies are properly installed before you proceed with the actual install.
+**NOTE-** NES.jl currently requires SCons and clang for building on Linux/macOS. So ensure that these dependencies are properly installed before you proceed with the actual install.
 
 Once you have installed the SCons and clang, open Julia REPL and enter the following commands
 
