@@ -1,4 +1,3 @@
-# /Users/kartikeygupta/Workspace/Julia/Gym/NES/deps/roms/smb.nes
 import Base: parse
 MAGIC = (0x4e, 0x45, 0x53, 0x1a)
 

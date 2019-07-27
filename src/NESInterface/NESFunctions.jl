@@ -3,7 +3,7 @@ if isfile(joinpath(dirname(dirname(@__FILE__)), "..", "deps", "deps.jl"))
 else
     ext = Sys.iswindows() ? ".dll" : ".so"
     println(joinpath(dirname(dirname(@__FILE__)), "deps", "deps.jl"))
-    error("lib_nes_env" * ext *  " not properly installed. Please run Pkg.build(\"ArcadeLearningEnvironment\")")
+    error("lib_nes_env" * ext *  " not properly installed. Please run Pkg.build(\"NES\")")
 end
 
 include("ROMInterface.jl")
@@ -122,8 +122,8 @@ end
 function NESEnv(rom_path::AbstractString)
     if isfile(rom_path)
         rom_path = rom_path
-    elseif isfile(joinpath(@__DIR__, "..", "..", "deps", "roms", rom_path * ".nes"))
-        rom_path = joinpath(@__DIR__, "..", "..", "deps", "roms", rom_path * ".nes")
+    elseif isfile(joinpath(@__DIR__, "..", "..", "roms", rom_path * ".nes"))
+        rom_path = joinpath(@__DIR__, "..", "..", "roms", rom_path * ".nes")
     else
         error("File at path $rom_path not found.")
     end

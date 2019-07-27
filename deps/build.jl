@@ -27,6 +27,8 @@ if lib_nes_env_detected == false
     srcdir = joinpath(BinDeps.depsdir(lib_nes_env), "src")
     nesdir = joinpath(srcdir, "nes")
     libdir = joinpath(prefix, "lib")
+    builddir = joinpath(nesdir, "build")
+    mapperdir = joinpath(builddir, "mappers")
     rm(joinpath(srcdir, "nes-py"), recursive=true, force=true)
     rm(joinpath(srcdir, "nes"), recursive=true, force=true)
     provides(BuildProcess,
@@ -36,12 +38,27 @@ if lib_nes_env_detected == false
             @build_steps begin
                 ChangeDirectory(srcdir)
                 `git clone https://github.com/Kautenja/nes-py.git`
+                `pwd`
                 `mv -f nes-py/nes_py/nes .`
                 `rm -rf nes-py`
                 FileRule(joinpath(libdir, "lib_nes_env.so"),
                 @build_steps begin
                         ChangeDirectory(nesdir)
-                        `scons`
+                        `mkdir build`
+                        `mkdir build/mappers`
+                        `g++ -o build/cartridge.os -c -std=c++1y -O2 -march=native -pipe -fPIC -Wno-unused-value -Iinclude src/cartridge.cpp`
+                        `g++ -o build/controller.os -c -std=c++1y -O2 -march=native -pipe -fPIC -Wno-unused-value -Iinclude src/controller.cpp`
+                        `g++ -o build/cpu.os -c -std=c++1y -O2 -march=native -pipe -fPIC -Wno-unused-value -Iinclude src/cpu.cpp`
+                        `g++ -o build/emulator.os -c -std=c++1y -O2 -march=native -pipe -fPIC -Wno-unused-value -Iinclude src/emulator.cpp`
+                        `g++ -o build/lib_nes_env.os -c -std=c++1y -O2 -march=native -pipe -fPIC -Wno-unused-value -Iinclude src/lib_nes_env.cpp`
+                        `g++ -o build/main_bus.os -c -std=c++1y -O2 -march=native -pipe -fPIC -Wno-unused-value -Iinclude src/main_bus.cpp`
+                        `g++ -o build/mappers/mapper_CNROM.os -c -std=c++1y -O2 -march=native -pipe -fPIC -Wno-unused-value -Iinclude src/mappers/mapper_CNROM.cpp`
+                        `g++ -o build/mappers/mapper_NROM.os -c -std=c++1y -O2 -march=native -pipe -fPIC -Wno-unused-value -Iinclude src/mappers/mapper_NROM.cpp`
+                        `g++ -o build/mappers/mapper_SxROM.os -c -std=c++1y -O2 -march=native -pipe -fPIC -Wno-unused-value -Iinclude src/mappers/mapper_SxROM.cpp`
+                        `g++ -o build/mappers/mapper_UxROM.os -c -std=c++1y -O2 -march=native -pipe -fPIC -Wno-unused-value -Iinclude src/mappers/mapper_UxROM.cpp`
+                        `g++ -o build/picture_bus.os -c -std=c++1y -O2 -march=native -pipe -fPIC -Wno-unused-value -Iinclude src/picture_bus.cpp`
+                        `g++ -o build/ppu.os -c -std=c++1y -O2 -march=native -pipe -fPIC -Wno-unused-value -Iinclude src/ppu.cpp`
+                        `g++ -o lib_nes_env.so -std=c++1y -O2 -march=native -pipe -dynamiclib build/cartridge.os build/controller.os build/cpu.os build/emulator.os build/lib_nes_env.os build/main_bus.os build/picture_bus.os build/ppu.os build/mappers/mapper_CNROM.os build/mappers/mapper_NROM.os build/mappers/mapper_SxROM.os build/mappers/mapper_UxROM.os`
                         `cp lib_nes_env.so $libdir`
                 end)
             end
