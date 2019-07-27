@@ -23,7 +23,7 @@ NES.jl can currently render only in the plot pane of [Juno IDE](https://junolab.
 ```julia
 using NES
 
-enviroment_type = "smb"
+environment_type = "smb"
 action_type = :RIGHT_ONLY
 env = SMBEnv(environment_type, action_type)
 current_state = reset!(env)
@@ -40,14 +40,14 @@ end
 ```
 
 ## Environments
-| Environment                     | Screenshot |
-|:--------------------------------|:-----------|
-| `smb`             |  ![](https://i.imgur.com/ubwQbux.png)    |
-| `smbdownsample`             |  ![](https://i.imgur.com/AC5xWrF.png)    |
-| `smbpixel`             |  ![](https://i.imgur.com/Wj2ZLEF.png)    |
-| `smbrectangle`             |  ![](https://i.imgur.com/kBQY8Rz.png)    |
-| `smb2`            |  ![](https://i.imgur.com/vQPDUN2.png)  |
-| `smb2downsample`            |  ![](https://i.imgur.com/7YlNDKH.png)  
+| Environment                     | Screenshot                               |
+|:--------------------------------|:-----------------------------------------|
+| `smb`             							|  ![](https://i.imgur.com/ubwQbux.png)    |
+| `smbdownsample`             		|  ![](https://i.imgur.com/AC5xWrF.png)    |
+| `smbpixel`             					|  ![](https://i.imgur.com/Wj2ZLEF.png)    |
+| `smbrectangle`             			|  ![](https://i.imgur.com/kBQY8Rz.png)    |
+| `smb2`            							|  ![](https://i.imgur.com/vQPDUN2.png)  	 |
+| `smb2downsample`            		|  ![](https://i.imgur.com/7YlNDKH.png)    |
 
 ## Action Spaces
 
@@ -85,4 +85,3 @@ end
 * [x] Super Mario Bros and Super Mario Bros 2 environments
 * [ ] Tetris environment
 * [ ] Integrate with [Gym.jl](https://github.com/FluxML/Gym.jl)
-
