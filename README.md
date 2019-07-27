@@ -6,6 +6,8 @@ This is a simple NES emulator for the Julia programming language, based on the [
 
 ## Installation
 
+NES.jl currently requires SCons and clang for building on Linux/macOS. So make ensure that these dependencies are properly installed before you proceed with the actual install.
+
 Open Julia REPL and enter the following commands
 
 ```julia
