@@ -1,4 +1,4 @@
-﻿# NES.jl [WIP]
+﻿# NES.jl
 
 [![Build Status](https://travis-ci.com/kraftpunk97/NES.jl.svg?branch=master)](https://travis-ci.com/kraftpunk97/NES.jl)
 
