@@ -15,11 +15,14 @@ mutable struct SMBEnv
 
     action_map::Dict{Int, UInt8}
     action_meanings::Dict{Int, String}
+
+    output_mode::Symbol
 end
 
 const SMB_reward_range = (-15, 15)
 
-function SMBEnv(rom_path::AbstractString, action_type::Symbol, lost_levels=false, target=nothing)
+function SMBEnv(rom_path::AbstractString, action_type::Symbol, output_mode::Symbol=:color, lost_levels=false, target=nothing)
+    @assert output_mode ∈ (:color, :tiles)
 
     target_world, target_stage, target_area = decode_target(target, lost_levels)
 
@@ -42,7 +45,7 @@ function SMBEnv(rom_path::AbstractString, action_type::Symbol, lost_levels=false
     end
 
     SMBEnv(target_world, target_area, target_stage, time_last, x_position_last,
-            nesenv, action_map, action_meanings)
+            nesenv, action_map, action_meanings, output_mode)
 end
 
 
@@ -93,10 +96,12 @@ function Base.getproperty(smb::SMBEnv, sym::Symbol)
         return smb.nesenv.ram[0x075b]
 
     elseif sym == :x_position
-        return smb.nesenv.ram[0x6e] * 0x100 + smb.nesenv.ram[0x87]
+        # current page  = 0x6e
+        # current x  = 0x87
+        return Int(smb.nesenv.ram[0x6e] * 0x100 + smb.nesenv.ram[0x87])
 
     elseif sym == :left_x_position
-        return (smb.nesenv.ram[0x87] - smb.nesenv.ram[0x071d]) % 256
+        return Int(smb.nesenv.ram[0x87] - smb.nesenv.ram[0x071d]) % 256
 
     elseif sym == :y_position
         return smb.nesenv.ram[0x03b9]
@@ -160,6 +165,21 @@ function Base.getproperty(smb::SMBEnv, sym::Symbol)
         # should default to 0 reward
         return min(0, _reward)
 
+    elseif sym == :addr_enemy_page
+        return 0x6f
+
+    elseif sym == :addr_enemy_x
+        return 0x88
+
+    elseif sym == :addr_enemy_y
+        return 0xd0
+
+    elseif sym == :addr_tiles
+        return 0x501
+
+    elseif sym == :framecount
+        return nes.nesenv.ram[0x000a]
+        
     else
         return Base.getfield(smb, sym)
     end
@@ -213,7 +233,7 @@ function reset!(smb::SMBEnv)
     skip_start_screen!(smb)
     smb.time_last = smb.time
     smb.x_position_last = smb.x_position
-    smb.nesenv.screen
+    smb.output_mode == :color ? smb.nesenv.screen : get_tiles(smb)
 end
 
 
@@ -295,7 +315,8 @@ function step!(smb::SMBEnv, action)
     end
 
     reward = clamp(reward, SMB_reward_range[1], SMB_reward_range[2])
-    return smb.nesenv.screen, reward, smb.nesenv.done, info
+    return smb.output_mode == :color ? smb.nesenv.screen : get_tiles(smb),
+            reward, smb.nesenv.done, info
 end
 
 function render(smb::SMBEnv)
@@ -303,4 +324,90 @@ function render(smb::SMBEnv)
     uint32_arr = screen[:, :, 1] .+ screen[:, :, 2] * 0x00000100 .+ screen[:, :, 3] * 0x00010000
     uint32_arr = uint32_arr |> transpose |> Array
     CairoRGBSurface(uint32_arr)
+end
+
+function get_enemies(smb::SMBEnv)
+    enemies = []
+    for slot=0:4
+        enemy = smb.nesenv.ram[0x10 + slot]
+        if enemy != 0
+            ex = smb.nesenv.ram[env.addr_enemy_page + slot] * 0x100 + smb.nesenv.ram[env.addr_enemy_x + slot]
+            ey = smb.nesenv.ram[env.addr_enemy_y + slot]
+            push!(enemies, ex=>ey)
+        end
+    end
+    return enemies
+end
+
+function get_tiles(smb::SMBEnv)
+    enemies = get_enemies(smb)
+    left_x = smb.left_x_position
+    y_viewport = smb.y_viewport
+    curr_x_pos = smb.x_position
+    curr_y_pos = smb.y_position
+    tiles = zeros(Int, 13, 16)
+
+    for tiles_y=1:13, tiles_x=1:16
+        box_x = 16 * (tiles_x - 8)
+        box_y = 16 * (tiles_y - 5)
+
+        # Empty space
+        tile_value = 0
+
+        # Non-empty space (e.g. hard surface, object)
+        curr_tile_type = get_tile_type(smb, box_x, box_y)
+        curr_tile_type == 1 && curr_y_pos + box_y < 0x180 && (tile_value = 1)
+
+        # Enemies
+        for enemy ∈ enemies
+            local dist_x, dist_y
+            dist_x = abs(enemy.first - (curr_x_pos + box_x - left_x + 108));
+            dist_y = abs(enemy.second - (90 + box_y))
+            if dist_x ≤ 9 && dist_y ≤ 9
+                tile_value = 2
+            end
+        end
+
+        # Mario
+        dist_x::Int = abs(curr_x_pos - (curr_x_pos + box_x - left_x + 108))
+        dist_y::Int = abs(curr_y_pos - (80 + box_y))
+
+        ## For debugging  purposes
+        #=
+        if tiles_y == 11 && tiles_x == 9
+            println("x = $tiles_x | curr_x = $curr_x_pos | box_x = $box_x | left_x = $left_x | dist_x = $dist_x")
+            println("y = $tiles_y | curr_y = $curr_y_pos | box_y = $box_y | dist_y = $dist_y")
+            #return curr_x_pos, box_x, left_x, curr_y_pos, box_y
+        end
+        =#
+
+        if y_viewport == 1 && dist_x ≤ 9 && dist_y ≤ 9
+            #println("x = $tiles_x | curr_x = $curr_x_pos | box_x = $box_x | left_x = $left_x")
+            #println("y = $tiles_y | curr_y = $curr_y_pos | box_y = $box_y")
+            tile_value = 3
+        end
+
+
+        tiles[tiles_y, tiles_x] = tile_value
+    end
+    return tiles
+end
+
+
+function get_tile_type(smb::SMBEnv, box_x, box_y)
+    left_x = smb.left_x_position
+    x = smb.x_position - left_x + box_x + 112
+    y = box_y + 96
+    page = floor(Int, x / 256) % 2
+    sub_x = floor(Int, (x % 256) / 16)
+    sub_y = floor(Int, (y - 32) / 16)
+
+    curr_tile_add::UInt16 = smb.addr_tiles + page * 13 * 16 + sub_y * 16 + sub_x
+
+    if sub_y ≥ 13 || sub_y < 0
+        return 0
+    end
+
+    # 0 = empty space, 1 = non-empty space (e.g. hard surface or object)
+    return Int(smb.nesenv.ram[curr_tile_add] != 0)
 end

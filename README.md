@@ -27,7 +27,8 @@ using NES
 
 environment_type = "smb"
 action_type = :RIGHT_ONLY
-env = SMBEnv(environment_type, action_type)
+output_mode = :color
+env = SMBEnv(environment_type, action_type, output_mode)
 current_state = reset!(env)
 done = false
 actions = [env.action_map |> keys |> rand for _=1:400]
@@ -81,7 +82,39 @@ end
 	* Down
 	* Up
 
-## RoadMap
+## Output modes
+
+Current state can be represented in two ways - color image(`:color`) or tiles(`:tiles`). `:color` outputs a 256 x 240 x 3 `Array` representation of the game screen. The `:tiles` mode represents the game screen in a 13 x 16 `Array` whose elements can be one of four values.
+
+ * 0 - Empty space
+ * 1 - Hard surfaces, objects etc
+ * 2 - Enemies
+ * 3 - Mario
+
+For example, the following game screen in `:color` mode...
+
+<img src="https://imgur.com/40tzoNE.png">
+
+
+<br>is represented as following in `:tiles` mode
+
+```
+ 0  0  0  0  0  0  0  0  0  0  0  0  0  0  0  0
+ 0  0  0  0  0  0  0  0  0  0  0  0  0  0  0  0
+ 0  0  0  0  0  0  0  0  0  0  0  0  0  0  0  0
+ 0  0  0  0  0  0  0  0  0  0  0  0  0  0  1  0
+ 0  0  0  0  0  0  0  0  0  0  0  0  0  0  0  0
+ 0  0  0  0  0  0  0  0  0  0  0  0  0  0  0  0
+ 0  0  0  0  0  0  0  0  0  0  0  0  0  0  0  0
+ 0  0  0  0  0  0  0  0  1  0  0  0  1  1  1  1
+ 0  0  0  0  0  0  0  3  0  0  0  0  0  0  0  0
+ 0  0  0  0  0  0  0  0  0  0  0  0  0  0  0  0
+ 0  0  0  0  0  0  0  0  0  0  0  0  2  0  0  0
+ 1  1  1  1  1  1  1  1  1  1  1  1  1  1  1  1
+ 1  1  1  1  1  1  1  1  1  1  1  1  1  1  1  1
+```
+
+## Road Map
 
 * [x] NES Emulator
 * [x] Super Mario Bros and Super Mario Bros 2 environments
