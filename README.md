@@ -15,7 +15,7 @@ Once you have installed the SCons and clang, open Julia REPL and enter the follo
 ```julia
 julia> using Pkg
 
-julia> Pkg.add("https://github.com/kraftpunk97/NES.jl")
+julia> Pkg.add("NES")
 ```
 
 ## Demo
