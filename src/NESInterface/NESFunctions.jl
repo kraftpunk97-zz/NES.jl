@@ -3,7 +3,7 @@ if isfile(joinpath(dirname(dirname(@__FILE__)), "..", "deps", "deps.jl"))
 else
     ext = Sys.iswindows() ? ".dll" : ".so"
     println(joinpath(dirname(dirname(@__FILE__)), "deps", "deps.jl"))
-    error("lib_nes_env" * ext *  " not properly installed. Please run Pkg.build(\"ArcadeLearningEnvironment\")")
+    error("lib_nes_env" * ext *  " not properly installed. Please run Pkg.build(\"NES\")")
 end
 
 include("ROMInterface.jl")
